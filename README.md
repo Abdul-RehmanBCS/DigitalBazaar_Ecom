@@ -74,7 +74,6 @@ npm run dev
 
 ### `client/.env`
 
-- `VITE_API_URL`
 - `VITE_API_ROOT`
 - `VITE_STRIPE_PUBLIC_KEY`
 - `VITE_GOOGLE_CLIENT_ID` (optional, Google sign-in)
@@ -84,7 +83,7 @@ npm run dev
 
 1. **MongoDB** — use [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) free cluster; set `MONGO_URI` on the API service.
 2. **API service** — Root: `server`, Build: `npm install`, Start: `npm start`. Set all `server/.env` variables in Render dashboard.
-3. **Web service** — Root: `client`, Build: `npm install && npm run build`, Publish: `dist`. Set `VITE_API_URL` to your Render API URL + `/api`, `VITE_API_ROOT` to API base URL.
+3. **Static site** — Root: `client`, Build: `npm install && npm run build`, Publish: `dist`. Set `VITE_API_ROOT` to your Render API URL (calls use `{VITE_API_ROOT}/api`).
 4. Set `CLIENT_URL` on the API to your Render frontend URL (CORS).
 5. Run seed once locally or via Render shell: `npm run seed` in `server/`.
 

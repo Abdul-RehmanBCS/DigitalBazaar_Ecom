@@ -1,7 +1,8 @@
 import { Helmet } from "react-helmet-async";
+import { getApiRoot, getSiteUrl } from "../lib/env.js";
 
 const SITE_NAME = "Digital Bazaar";
-const SITE_URL = import.meta.env.VITE_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "");
+const SITE_URL = getSiteUrl();
 
 export function buildBreadcrumbSchema(items) {
   return {
@@ -36,7 +37,7 @@ export default function SEO({
   const fullTitle = title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`;
   const pageUrl = url || (typeof window !== "undefined" ? window.location.href : SITE_URL);
   const defaultImg = `${SITE_URL}/favicon.svg`;
-  const ogImage = image?.startsWith("http") ? image : image ? `${import.meta.env.VITE_API_ROOT || ""}${image}` : defaultImg;
+  const ogImage = image?.startsWith("http") ? image : image ? `${getApiRoot()}${image}` : defaultImg;
 
   const schemas = [];
 

@@ -3,8 +3,9 @@ import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 import ChatLog from "../models/ChatLog.js";
 import { completeChat, getActiveProviderLabel } from "../lib/llmClient.js";
+import { env } from "../config/env.js";
 
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
+const CLIENT_URL = env.CLIENT_URL;
 
 const STOP_WORDS = new Set([
   "what", "which", "where", "when", "how", "why", "who", "the", "and", "for", "are", "you", "your",

@@ -2,6 +2,7 @@ import asyncHandler from "express-async-handler";
 import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import { generateToken } from "../utils/generateToken.js";
+import { env } from "../config/env.js";
 
 function authResponse(user) {
   return {
@@ -15,9 +16,8 @@ function authResponse(user) {
 }
 
 function getGoogleClient() {
-  const clientId = process.env.GOOGLE_CLIENT_ID;
-  if (!clientId) return null;
-  return new OAuth2Client(clientId);
+  if (!env.GOOGLE_CLIENT_ID) return null;
+  return new OAuth2Client(env.GOOGLE_CLIENT_ID);
 }
 
 export const register = asyncHandler(async (req, res) => {
@@ -67,7 +67,7 @@ export const googleAuth = asyncHandler(async (req, res) => {
   try {
     const ticket = await client.verifyIdToken({
       idToken: credential,
-      audience: process.env.GOOGLE_CLIENT_ID
+      audience: env.GOOGLE_CLIENT_ID
     });
     payload = ticket.getPayload();
   } catch {

@@ -1,7 +1,8 @@
 import asyncHandler from "express-async-handler";
 import Stripe from "stripe";
+import { env } from "../config/env.js";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
+const stripe = new Stripe(env.STRIPE_SECRET_KEY);
 
 export const createPaymentIntent = asyncHandler(async (req, res) => {
   const { amount } = req.body;

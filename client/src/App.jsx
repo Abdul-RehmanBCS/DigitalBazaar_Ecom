@@ -18,7 +18,6 @@ import { api } from "./lib/api";
 import { setCredentials } from "./store/slices/authSlice";
 import { addToCart, clearCart, removeFromCart, toggleWishlist, updateCartQty } from "./store/slices/shopSlice";
 
-const API_ROOT = import.meta.env.VITE_API_ROOT || "http://localhost:5000";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
 
 const Protected = ({ children }) =>

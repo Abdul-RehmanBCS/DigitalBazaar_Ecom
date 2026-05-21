@@ -1,7 +1,5 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import mongoose from "mongoose";
+import { env } from "./config/env.js";
 import bcrypt from "bcryptjs";
 import User from "./models/User.js";
 import Category from "./models/Category.js";
@@ -11,10 +9,8 @@ import Blog from "./models/Blog.js";
 import { blogPosts } from "./data/blogPosts.js";
 import { getProductSeedData } from "./data/products.js";
 
-const MONGO_URI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/digital_bazaar";
-
 async function seed() {
-  await mongoose.connect(MONGO_URI);
+  await mongoose.connect(env.MONGO_URI);
   console.log("Connected to MongoDB for seeding");
 
   // Clear existing data
