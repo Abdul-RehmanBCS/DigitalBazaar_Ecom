@@ -19,6 +19,7 @@ import analyticsRoutes from "./routes/analyticsRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import { getActiveProviderLabel } from "./lib/llmClient.js";
 import { seedIfEmpty } from "./lib/seedDatabase.js";
+import { handleCatalogFallback, isCatalogFallbackRoute } from "./lib/catalogFallback.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -26,6 +27,7 @@ const __dirname = path.dirname(__filename);
 
 const ALLOWED_ORIGINS = [
   "https://digitalbazaar-web.onrender.com",
+  "https://abdul-rehmanbcs.github.io",
   process.env.CLIENT_URL?.replace(/\/$/, ""),
 ].filter(Boolean);
 
@@ -71,7 +73,13 @@ app.get("/api/health", (_req, res) => {
 app.use((req, res, next) => {
   if (req.path === "/api/health" || req.path === "/") return next();
   if (!isDbReady()) {
-    return res.status(503).json({ message: "Database is connecting, retry shortly" });
+    if (isCatalogFallbackRoute(req)) {
+      return handleCatalogFallback(req, res);
+    }
+    return res.status(503).json({
+      message: "Database is connecting, retry shortly",
+      hint: "MongoDB Atlas: Network Access → Add IP → Allow 0.0.0.0/0",
+    });
   }
   next();
 });

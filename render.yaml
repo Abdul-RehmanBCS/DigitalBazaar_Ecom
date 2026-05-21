@@ -9,21 +9,21 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: MONGO_URI
-        sync: false
       - key: MONGO_USER
-        sync: false
+        value: abdulrehmanjavediqbal7_db_user
+      - key: MONGO_CLUSTER
+        value: cluster0.znb35ue.mongodb.net
       - key: MONGO_PASSWORD
         sync: false
-      - key: MONGO_CLUSTER
+      - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_URL
         value: https://digitalbazaar-web.onrender.com
-      - key: STRIPE_SECRET_KEY
-        sync: false
       - key: GOOGLE_CLIENT_ID
+        value: 859048426937-sq5cs7nbt391tj7spoo1i6i04s2r7jjq.apps.googleusercontent.com
+      - key: STRIPE_SECRET_KEY
         sync: false
       - key: GROQ_API_KEY
         sync: false

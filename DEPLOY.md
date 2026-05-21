@@ -33,17 +33,32 @@ https://github.com/Abdul-RehmanBCS/DigitalBazaar_Ecom
 4. **Deploy Blueprint**
 5. API → **Shell** → `npm run seed`
 
-## Step 3 — MongoDB Atlas
+## Step 3 — MongoDB Atlas (required for login, cart, checkout)
 
-- Network Access → **0.0.0.0/0**
-- URI format: `mongodb+srv://USER:PASS@cluster.mongodb.net/digital_bazaar?retryWrites=true&w=majority`
+**Without this, the live API cannot save users or orders** (products may still show via catalog fallback).
 
-## Step 4 — Google OAuth
+1. Open https://cloud.mongodb.com → your project → **Network Access**
+2. **Add IP Address** → choose **Allow Access from Anywhere** (`0.0.0.0/0`) → Confirm
+3. Wait ~1 minute, then check: https://digitalbazaar-api.onrender.com/api/health → `"dbReady": true`
+4. On first connect, the API **auto-seeds** 18 products (same as localhost `npm run seed`)
 
-Add to **Authorized JavaScript origins**:
+Render API env (if not using blueprint defaults):
+
+| Key | Value |
+|-----|--------|
+| `MONGO_USER` | `abdulrehmanjavediqbal7_db_user` |
+| `MONGO_CLUSTER` | `cluster0.znb35ue.mongodb.net` |
+| `MONGO_PASSWORD` | your Atlas database user password |
+
+## Step 4 — Google OAuth (required for “Continue with Google”)
+
+In [Google Cloud Console](https://console.cloud.google.com/apis/credentials) → your OAuth 2.0 Client → **Authorized JavaScript origins**, add:
 
 - `https://digitalbazaar-web.onrender.com`
+- `http://localhost:5173` (local dev)
 - `https://abdul-rehmanbcs.github.io` (if using GitHub Pages)
+
+**Authorized redirect URIs** are not required for the Google One Tap / credential flow this app uses.
 
 ## Step 5 — GitHub Pages (automatic)
 

@@ -5,6 +5,10 @@ dotenv.config({ override: process.env.NODE_ENV !== "production" });
 
 const isProd = process.env.NODE_ENV === "production";
 
+/** Public OAuth client id (same as VITE_GOOGLE_CLIENT_ID in client). */
+const DEFAULT_GOOGLE_CLIENT_ID =
+  "859048426937-sq5cs7nbt391tj7spoo1i6i04s2r7jjq.apps.googleusercontent.com";
+
 export function requireEnv(name) {
   const value = process.env[name]?.trim();
   if (value) return value;
@@ -76,7 +80,8 @@ export const env = {
   MONGO_URI: process.env.MONGO_URI,
   JWT_SECRET: process.env.JWT_SECRET?.trim() || (isProd ? requireEnv("JWT_SECRET") : "dev-jwt-secret"),
   CLIENT_URL: process.env.CLIENT_URL.replace(/\/$/, ""),
-  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID?.trim() || "",
+  GOOGLE_CLIENT_ID:
+    process.env.GOOGLE_CLIENT_ID?.trim() || (isProd ? DEFAULT_GOOGLE_CLIENT_ID : ""),
   STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY?.trim() || "sk_test_placeholder",
   GROQ_API_KEY: process.env.GROQ_API_KEY?.trim() || "",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY?.trim() || "",

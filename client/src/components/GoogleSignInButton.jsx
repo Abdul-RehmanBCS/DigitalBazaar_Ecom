@@ -47,7 +47,16 @@ export default function GoogleSignInButton() {
       toast.success("Signed in with Google!");
       navigate("/");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Google sign-in failed");
+      const msg = err.response?.data?.message;
+      const hint = err.response?.data?.hint;
+      if (err.response?.status === 503) {
+        toast.error(
+          "Database is still connecting. In MongoDB Atlas → Network Access, allow 0.0.0.0/0, then try again in 1–2 minutes.",
+          { duration: 8000 }
+        );
+        return;
+      }
+      toast.error(msg || hint || "Google sign-in failed");
     }
   };
 
