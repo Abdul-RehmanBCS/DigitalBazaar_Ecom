@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 
-dotenv.config();
+// Prefer server/.env over stale shell exports during local development.
+dotenv.config({ override: process.env.NODE_ENV !== "production" });
 
 const isProd = process.env.NODE_ENV === "production";
 
@@ -50,6 +51,7 @@ function buildMongoUriFromParts() {
   return `mongodb+srv://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}/digital_bazaar?retryWrites=true&w=majority`;
 }
 
+// Prefer split Atlas vars (avoids truncated MONGO_URI in Render dashboard).
 const builtFromParts = buildMongoUriFromParts();
 if (builtFromParts) {
   process.env.MONGO_URI = builtFromParts;

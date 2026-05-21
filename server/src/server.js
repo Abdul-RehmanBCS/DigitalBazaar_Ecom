@@ -18,6 +18,7 @@ import chatRoutes from "./routes/chatRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import blogRoutes from "./routes/blogRoutes.js";
 import { getActiveProviderLabel } from "./lib/llmClient.js";
+import { seedIfEmpty } from "./lib/seedDatabase.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -55,11 +56,15 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/api/health", (_req, res) => {
+  const ready = isDbReady();
   res.status(200).json({
     ok: true,
-    dbReady: isDbReady(),
+    dbReady: ready,
     env: env.NODE_ENV,
     db: "digital_bazaar",
+    hint: ready
+      ? undefined
+      : "MongoDB not connected — allow 0.0.0.0/0 in Atlas Network Access",
   });
 });
 
@@ -89,6 +94,11 @@ const HOST = "0.0.0.0";
 async function connectWithRetry() {
   try {
     await connectDB();
+    try {
+      await seedIfEmpty();
+    } catch (seedErr) {
+      console.error("[server] Auto-seed failed:", seedErr.message);
+    }
     const ai = getActiveProviderLabel();
     console.log(`CORS allowed: ${ALLOWED_ORIGINS.join(", ")}`);
     console.log(
