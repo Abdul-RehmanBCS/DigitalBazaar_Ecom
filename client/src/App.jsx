@@ -18,7 +18,8 @@ import { api } from "./lib/api";
 import { setCredentials } from "./store/slices/authSlice";
 import { addToCart, clearCart, removeFromCart, toggleWishlist, updateCartQty } from "./store/slices/shopSlice";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY || "");
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY?.trim();
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 const Protected = ({ children }) =>
   useSelector((s) => s.auth.user) ? children : <Navigate to="/login" replace />;
@@ -454,7 +455,20 @@ function CheckoutForm() {
     </div>
   );
 }
-function Checkout() { return <Elements stripe={stripePromise}><CheckoutForm /></Elements>; }
+function Checkout() {
+  if (!stripePromise) {
+    return (
+      <div className="max-w-lg mx-auto card p-6 text-center text-slate-300">
+        Checkout is unavailable — set VITE_STRIPE_PUBLIC_KEY on Render and redeploy the web service.
+      </div>
+    );
+  }
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
+  );
+}
 
 /* ─── Auth ─── */
 function Auth({ mode }) {

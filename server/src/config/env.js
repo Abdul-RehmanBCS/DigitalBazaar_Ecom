@@ -23,27 +23,29 @@ export function normalizeMongoUri(uri) {
   return uri;
 }
 
-process.env.MONGO_URI = normalizeMongoUri(
-  process.env.MONGO_URI?.trim() || requireEnv("MONGO_URI")
-);
+if (!process.env.MONGO_URI?.trim()) {
+  console.error("[env] MONGO_URI is required");
+  process.exit(1);
+}
+
+process.env.MONGO_URI = normalizeMongoUri(process.env.MONGO_URI.trim());
 
 if (isProd && !process.env.MONGO_URI.includes("digital_bazaar")) {
   console.error("[env] MONGO_URI must include /digital_bazaar");
   process.exit(1);
 }
 
-const stripeKey = process.env.STRIPE_SECRET_KEY?.trim();
-if (!stripeKey && isProd) {
-  console.warn("[env] STRIPE_SECRET_KEY missing — set in Render dashboard");
+if (!process.env.CLIENT_URL?.trim()) {
+  process.env.CLIENT_URL = "https://digitalbazaar-web.onrender.com";
 }
 
 export const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   MONGO_URI: process.env.MONGO_URI,
-  JWT_SECRET: requireEnv("JWT_SECRET"),
-  CLIENT_URL: requireEnv("CLIENT_URL").replace(/\/$/, ""),
+  JWT_SECRET: process.env.JWT_SECRET?.trim() || (isProd ? requireEnv("JWT_SECRET") : "dev-jwt-secret"),
+  CLIENT_URL: process.env.CLIENT_URL.replace(/\/$/, ""),
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID?.trim() || "",
-  STRIPE_SECRET_KEY: stripeKey || "sk_test_placeholder",
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY?.trim() || "sk_test_placeholder",
   GROQ_API_KEY: process.env.GROQ_API_KEY?.trim() || "",
   GEMINI_API_KEY: process.env.GEMINI_API_KEY?.trim() || "",
 };

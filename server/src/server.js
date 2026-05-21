@@ -23,13 +23,24 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const ALLOWED_ORIGINS = [
+  "https://digitalbazaar-web.onrender.com",
+  process.env.CLIENT_URL?.replace(/\/$/, ""),
+].filter(Boolean);
+
 if (env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL?.replace(/\/$/, ""),
+    origin(origin, callback) {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        callback(null, true);
+        return;
+      }
+      callback(null, ALLOWED_ORIGINS[0] || true);
+    },
     credentials: true,
   })
 );
@@ -38,6 +49,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan(env.NODE_ENV === "production" ? "combined" : "dev"));
 app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+
+app.get("/", (_req, res) => {
+  res.json({ service: "digitalbazaar-api", ok: true, dbReady: isDbReady() });
+});
 
 app.get("/api/health", (_req, res) => {
   res.status(200).json({
@@ -49,7 +64,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.use((req, res, next) => {
-  if (req.path === "/api/health") return next();
+  if (req.path === "/api/health" || req.path === "/") return next();
   if (!isDbReady()) {
     return res.status(503).json({ message: "Database is connecting, retry shortly" });
   }
@@ -71,6 +86,21 @@ app.use(errorHandler);
 
 const HOST = "0.0.0.0";
 
+async function connectWithRetry() {
+  try {
+    await connectDB();
+    const ai = getActiveProviderLabel();
+    console.log(`CORS allowed: ${ALLOWED_ORIGINS.join(", ")}`);
+    console.log(
+      `Chat AI: ${ai === "fallback" ? "rule-based (set GROQ_API_KEY or GEMINI_API_KEY)" : ai}`
+    );
+    return true;
+  } catch (err) {
+    console.error("[server] Database connection failed:", err.message);
+    return false;
+  }
+}
+
 async function start() {
   const PORT = Number(process.env.PORT);
   if (!PORT) {
@@ -82,16 +112,10 @@ async function start() {
     console.log(`Server listening on ${HOST}:${PORT}`);
   });
 
-  try {
-    await connectDB();
-    const ai = getActiveProviderLabel();
-    console.log(`CORS origin: ${process.env.CLIENT_URL}`);
-    console.log(
-      `Chat AI: ${ai === "fallback" ? "rule-based (set GROQ_API_KEY or GEMINI_API_KEY)" : ai}`
-    );
-  } catch (err) {
-    console.error("[server] Database connection failed:", err.message);
-    process.exit(1);
+  if (!(await connectWithRetry())) {
+    const timer = setInterval(async () => {
+      if (await connectWithRetry()) clearInterval(timer);
+    }, 30000);
   }
 
   const shutdown = async (signal) => {
