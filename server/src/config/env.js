@@ -50,12 +50,10 @@ function buildMongoUriFromParts() {
   return `mongodb+srv://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}/digital_bazaar?retryWrites=true&w=majority`;
 }
 
-if (!process.env.MONGO_URI?.trim()) {
-  const built = buildMongoUriFromParts();
-  if (built) process.env.MONGO_URI = built;
-}
-
-if (!process.env.MONGO_URI?.trim()) {
+const builtFromParts = buildMongoUriFromParts();
+if (builtFromParts) {
+  process.env.MONGO_URI = builtFromParts;
+} else if (!process.env.MONGO_URI?.trim()) {
   console.error("[env] MONGO_URI (or MONGO_USER + MONGO_PASSWORD + MONGO_CLUSTER) is required");
   process.exit(1);
 }
