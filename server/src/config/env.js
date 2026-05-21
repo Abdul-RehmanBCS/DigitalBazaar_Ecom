@@ -11,20 +11,52 @@ export function requireEnv(name) {
   process.exit(1);
 }
 
+function dedupeMongoQuery(search) {
+  if (!search) return "";
+  const raw = search.startsWith("?") ? search.slice(1) : search;
+  const params = new URLSearchParams(raw);
+  const out = new URLSearchParams();
+  for (const [key, value] of params.entries()) {
+    if (!out.has(key)) out.set(key, value);
+  }
+  const serialized = out.toString();
+  return serialized ? `?${serialized}` : "";
+}
+
 export function normalizeMongoUri(uri) {
   if (!uri) return uri;
-  if (uri.includes("/digital_bazaar")) return uri;
-  if (/\.mongodb\.net\/?(\?|$)/.test(uri)) {
-    return uri.replace(/(\.mongodb\.net)\/?(\?|$)/, "$1/digital_bazaar$2");
+  const trimmed = uri.trim();
+  const qIndex = trimmed.indexOf("?");
+  const query = qIndex >= 0 ? trimmed.slice(qIndex) : "";
+  let base = qIndex >= 0 ? trimmed.slice(0, qIndex) : trimmed;
+
+  if (!base.includes("/digital_bazaar")) {
+    if (/\.mongodb\.net\/?$/.test(base)) {
+      base = base.replace(/\.mongodb\.net\/?$/, ".mongodb.net/digital_bazaar");
+    } else if (/mongodb:\/\/[^/]+\/?$/.test(base)) {
+      base = base.replace(/\/?$/, "/digital_bazaar");
+    }
   }
-  if (/mongodb:\/\/[^/]+\/?(\?|$)/.test(uri) && !uri.match(/mongodb:\/\/[^/]+\/[^/?]+/)) {
-    return uri.replace(/(mongodb:\/\/[^/]+)\/?(\?|$)/, "$1/digital_bazaar$2");
-  }
-  return uri;
+
+  return base + dedupeMongoQuery(query);
+}
+
+function buildMongoUriFromParts() {
+  const user = process.env.MONGO_USER?.trim();
+  const password = process.env.MONGO_PASSWORD?.trim();
+  const cluster = process.env.MONGO_CLUSTER?.trim();
+  if (!user || !password || !cluster) return "";
+  const host = cluster.replace(/^mongodb(\+srv)?:\/\//, "").replace(/\/$/, "");
+  return `mongodb+srv://${encodeURIComponent(user)}:${encodeURIComponent(password)}@${host}/digital_bazaar?retryWrites=true&w=majority`;
 }
 
 if (!process.env.MONGO_URI?.trim()) {
-  console.error("[env] MONGO_URI is required");
+  const built = buildMongoUriFromParts();
+  if (built) process.env.MONGO_URI = built;
+}
+
+if (!process.env.MONGO_URI?.trim()) {
+  console.error("[env] MONGO_URI (or MONGO_USER + MONGO_PASSWORD + MONGO_CLUSTER) is required");
   process.exit(1);
 }
 

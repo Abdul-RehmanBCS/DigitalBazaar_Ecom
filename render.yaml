@@ -11,6 +11,12 @@ services:
         value: production
       - key: MONGO_URI
         sync: false
+      - key: MONGO_USER
+        sync: false
+      - key: MONGO_PASSWORD
+        sync: false
+      - key: MONGO_CLUSTER
+        sync: false
       - key: JWT_SECRET
         generateValue: true
       - key: CLIENT_URL
